@@ -12,11 +12,14 @@
    #"text/html"
    (get-in response [:headers "Content-Type"])))
 
-(defn add-refresh-script [body]
+(def refresh-script
+  "setTimeout(function() { window.location.reload() }, 5000)")
+
+(defn add-script [body script]
   (str/replace
    body
    #"<head\s*[^>]*>"
-   #(str % "<script></script>")))
+   #(str % "<script type=\"text/javascript\">" script "</script>")))
 
 (defn wrap-refresh
   [handler]
@@ -25,5 +28,5 @@
       (if (and (get-request? request)
                (success? response)
                (html-content? response))
-        (update-in response [:body] add-refresh-script)
+        (update-in response [:body] add-script refresh-script)
         response))))
