@@ -1,6 +1,9 @@
 (ns ring.middleware.refresh
   (:require [clojure.string :as str]))
 
+(defn- get-request? [request]
+  (= (:request-method request) :get))
+
 (defn- success? [response]
   (<= 200 (:status response) 299))
 
@@ -19,6 +22,8 @@
   [handler]
   (fn [request]
     (let [response (handler request)]
-      (if (and (success? response) (html-content? response))
+      (if (and (get-request? request)
+               (success? response)
+               (html-content? response))
         (update-in response [:body] add-refresh-script)
         response))))
