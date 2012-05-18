@@ -1,7 +1,8 @@
 (ns ring.middleware.refresh
   (:use [compojure.core :only (routes GET)]
         [ns-tracker.core :only (ns-tracker)])
-  (:require [clojure.string :as str]))
+  (:require [clojure.string :as str]
+            [clojure.java.io :as io]))
 
 (defn- get-request? [request]
   (= (:request-method request) :get))
@@ -15,21 +16,7 @@
    (get-in response [:headers "Content-Type"])))
 
 (def refresh-script
-  "function reloadIfSourceChanged() {
-     var request = new XMLHttpRequest()
-     request.onreadystatechange = function() {
-       if (request.readyState == 4) {
-         if (request.responseText == 'true') {
-           window.location.reload()
-         } else {
-           setTimeout(reloadIfSourceChanged, 200)
-         }
-       }
-     }
-     request.open('GET', '/__source_changed', true)
-     request.send()
-   }
-   window.onload = reloadIfSourceChanged")
+  (slurp (io/resource "ring/js/refresh.js")))
 
 (defn add-script [body script]
   (str/replace
