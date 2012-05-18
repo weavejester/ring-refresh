@@ -1,3 +1,5 @@
+var pageLoadTime = new Date().getTime()
+
 function reloadIfSourceChanged() {
     var request = new XMLHttpRequest()
     request.onreadystatechange = function() {
@@ -10,7 +12,7 @@ function reloadIfSourceChanged() {
             }
         }
     }
-    request.open('GET', '/__source_changed', true)
+    request.open('GET', '/__source_changed?since=' + pageLoadTime, true)
     request.send()
 }
 
