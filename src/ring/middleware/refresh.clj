@@ -70,6 +70,10 @@
         response))))
 
 (defn wrap-refresh
+  "Injects Javascript into HTML responses which automatically refreshes the
+  browser when any file in the supplied directories is modified. Only successful
+  responses from GET requests are affected. The default directories are 'src'
+  and 'resources'."
   ([handler]
      (wrap-refresh handler ["src" "resources"]))
   ([handler dirs]
