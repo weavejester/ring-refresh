@@ -20,7 +20,7 @@
 (def ^:private refresh-script
   (slurp (io/resource "ring/js/refresh.js")))
 
-(defn add-script [body script]
+(defn- add-script [body script]
   (str/replace
    body
    #"<head\s*[^>]*>"
@@ -38,7 +38,7 @@
 (defn- random-uuid []
   (str (UUID/randomUUID)))
 
-(defn watch-until [reference pred timeout-ms]
+(defn- watch-until [reference pred timeout-ms]
   (let [result    (promise)
         watch-key (random-uuid)]
     (try
