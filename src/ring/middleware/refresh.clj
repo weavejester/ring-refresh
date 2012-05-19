@@ -4,7 +4,7 @@
         ring.middleware.params)
   (:require [clojure.string :as str]
             [clojure.java.io :as io])
-  (:import java.util.Date))
+  (:import [java.util Date UUID]))
 
 (defn- get-request? [request]
   (= (:request-method request) :get))
@@ -29,17 +29,36 @@
 (def ^:private last-modified
   (atom (Date.)))
 
-(defn start-watch! [dirs]
+(defn- watch-dirs! [dirs]
   (watcher dirs
    (rate 100)
    (on-change
     (fn [_] (reset! last-modified (Date.))))))
 
+(defn- random-uuid []
+  (str (UUID/randomUUID)))
+
+(defn watch-until [reference pred timeout-ms]
+  (let [result    (promise)
+        watch-key (random-uuid)]
+    (try
+      (add-watch reference
+                 watch-key
+                 (fn [_ _ _ value]
+                   (when (pred value)
+                     (deliver result true))))
+      (or (pred @reference)
+          (deref result timeout-ms false))
+      (finally
+       (remove-watch reference watch-key)))))
+
 (def ^:private source-changed-route
-  (wrap-params
-   (GET "/__source_changed" [since]
-     (str (> (.getTime @last-modified)
-             (Long. since))))))
+  (GET "/__source_changed" [since]
+    (let [timestamp (Long. since)]
+      (str (watch-until
+            last-modified
+            #(> (.getTime %) timestamp)
+            60000)))))
 
 (defn- wrap-with-script [handler script]
   (fn [request]
@@ -54,7 +73,7 @@
   ([handler]
      (wrap-refresh handler ["src" "resources"]))
   ([handler dirs]
-     (start-watch! dirs)
+     (watch-dirs! dirs)
      (routes
-      source-changed-route
+      (wrap-params source-changed-route)
       (wrap-with-script handler refresh-script))))
