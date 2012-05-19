@@ -41,6 +41,15 @@
      (str (> (.getTime @last-modified)
              (Long. since))))))
 
+(defn- wrap-with-script [handler script]
+  (fn [request]
+    (let [response (handler request)]
+      (if (and (get-request? request)
+               (success? response)
+               (html-content? response))
+        (update-in response [:body] add-script script)
+        response))))
+
 (defn wrap-refresh
   ([handler]
      (wrap-refresh handler ["src" "resources"]))
@@ -48,10 +57,4 @@
      (start-watch! dirs)
      (routes
       source-changed-route
-      (fn [request]
-        (let [response (handler request)]
-          (if (and (get-request? request)
-                   (success? response)
-                   (html-content? response))
-            (update-in response [:body] add-script refresh-script)
-            response))))))
+      (wrap-with-script handler refresh-script))))
