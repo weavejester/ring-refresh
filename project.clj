@@ -1,4 +1,4 @@
-(defproject ring-refresh "0.1.0-SNAPSHOT"
+(defproject ring-refresh "0.1.0"
   :description "Ring middleware for automatically refreshing HTML pages"
   :url "https://github.com/weavejester/ring-refresh"
   :license {:name "Eclipse Public License"
