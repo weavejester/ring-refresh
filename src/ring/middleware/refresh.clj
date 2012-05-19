@@ -17,7 +17,7 @@
    #"text/html"
    (get-in response [:headers "Content-Type"])))
 
-(def refresh-script
+(def ^:private refresh-script
   (slurp (io/resource "ring/js/refresh.js")))
 
 (defn add-script [body script]
@@ -26,27 +26,32 @@
    #"<head\s*[^>]*>"
    #(str % "<script type=\"text/javascript\">" script "</script>")))
 
-(def last-modified
+(def ^:private last-modified
   (atom (Date.)))
 
-(defn start-watch! []
-  (watcher ["src" "resources"]
+(defn start-watch! [dirs]
+  (watcher dirs
    (rate 100)
    (on-change
     (fn [_] (reset! last-modified (Date.))))))
 
+(def ^:private source-changed-route
+  (wrap-params
+   (GET "/__source_changed" [since]
+     (str (> (.getTime @last-modified)
+             (Long. since))))))
+
 (defn wrap-refresh
-  [handler]
-  (start-watch!)
-  (routes
-   (wrap-params
-    (GET "/__source_changed" [since]
-      (str (> (.getTime @last-modified)
-              (Long. since)))))
-   (fn [request]
-     (let [response (handler request)]
-       (if (and (get-request? request)
-                (success? response)
-                (html-content? response))
-         (update-in response [:body] add-script refresh-script)
-         response)))))
+  ([handler]
+     (wrap-refresh handler ["src" "resources"]))
+  ([handler dirs]
+     (start-watch! dirs)
+     (routes
+      source-changed-route
+      (fn [request]
+        (let [response (handler request)]
+          (if (and (get-request? request)
+                   (success? response)
+                   (html-content? response))
+            (update-in response [:body] add-script refresh-script)
+            response))))))
