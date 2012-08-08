@@ -78,6 +78,7 @@
      (wrap-refresh handler ["src" "resources"]))
   ([handler dirs]
      (watch-dirs! dirs)
-     (routes
-      (wrap-params source-changed-route)
-      (wrap-with-script handler refresh-script))))
+     (wrap-params
+      (routes
+       source-changed-route
+       (wrap-with-script handler refresh-script)))))
