@@ -20,11 +20,27 @@
 (def ^:private refresh-script
   (slurp (io/resource "ring/js/refresh.js")))
 
+(defprotocol AsString
+  (as-str [x]))
+
+(extend-protocol AsString
+  String
+  (as-str [s] s)
+  java.io.File
+  (as-str [f] (slurp f))
+  java.io.InputStream
+  (as-str [i] (slurp i))
+  clojure.lang.ISeq
+  (as-str [xs] (apply str xs))
+  nil
+  (as-str [_] nil))
+
 (defn- add-script [body script]
-  (str/replace
-   body
-   #"<head\s*[^>]*>"
-   #(str % "<script type=\"text/javascript\">" script "</script>")))
+  (if-let [body-str (as-str body)]
+    (str/replace
+     body-str
+     #"<head\s*[^>]*>"
+     #(str % "<script type=\"text/javascript\">" script "</script>"))))
 
 (def ^:private last-modified
   (atom (Date.)))
@@ -66,7 +82,9 @@
       (if (and (get-request? request)
                (success? response)
                (html-content? response))
-        (update-in response [:body] add-script script)
+        (-> response
+            (update-in [:body] add-script script)
+            (update-in [:headers] dissoc "Content-Length"))
         response))))
 
 (defn wrap-refresh
