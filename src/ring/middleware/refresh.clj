@@ -13,9 +13,8 @@
   (<= 200 (:status response) 299))
 
 (defn- html-content? [response]
-  (re-find
-   #"text/html"
-   (get-in response [:headers "Content-Type"])))
+  (if-let [content-type (get-in response [:headers "Content-Type"])]
+    (re-find #"text/html" content-type)))
 
 (def ^:private refresh-script
   (slurp (io/resource "ring/js/refresh.js")))
