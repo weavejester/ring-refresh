@@ -5,4 +5,4 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.3.0"]
                  [watchtower "0.1.1"]
-                 [compojure "1.0.4"]])
+                 [compojure "1.1.5"]])
