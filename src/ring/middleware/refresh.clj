@@ -1,4 +1,5 @@
 (ns ring.middleware.refresh
+  (:refer-clojure :exclude [random-uuid])
   (:use [compojure.core :only (routes GET)]
         [watchtower.core :only (watcher rate on-change)]
         ring.middleware.params)
