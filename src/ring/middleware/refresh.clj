@@ -39,7 +39,7 @@
   (if-let [body-str (as-str body)]
     (str/replace
      body-str
-     #"<head\s*[^>]*>"
+     #"<head\s*(?:\s[^\/>]+)?>"
      #(str % "<script type=\"text/javascript\">" script "</script>"))))
 
 (def ^:private last-modified
