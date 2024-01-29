@@ -10,9 +10,6 @@
 (defn- get-request? [request]
   (= (:request-method request) :get))
 
-(defn- success? [response]
-  (<= 200 (:status response) 299))
-
 (defn- html-content? [response]
   (if-let [content-type (get-in response [:headers "Content-Type"])]
     (re-find #"text/html" content-type)))
@@ -80,7 +77,6 @@
   (fn [request]
     (let [response (handler request)]
       (if (and (get-request? request)
-               (success? response)
                (html-content? response))
         (-> response
             (update-in [:body] add-script script)
@@ -89,9 +85,9 @@
 
 (defn wrap-refresh
   "Injects Javascript into HTML responses which automatically refreshes the
-  browser when any file in the supplied directories is modified. Only successful
-  responses from GET requests are affected. The default directories are 'src'
-  and 'resources'."
+  browser when any file in the supplied directories is modified. Only
+  responses from GET requests are affected. The default directories
+  are 'src' and 'resources'."
   ([handler]
      (wrap-refresh handler ["src" "resources"]))
   ([handler dirs]

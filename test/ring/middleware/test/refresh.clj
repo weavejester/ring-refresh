@@ -1,13 +1,15 @@
 (ns ring.middleware.test.refresh
   (:require [clojure.java.io :as io]
-            [clojure.test :refer [are deftest testing]]
+            [clojure.test :refer [are deftest is testing]]
             [ring.middleware.refresh :refer :all]))
 
-(defn- create-test-handler [body]
-  (-> (constantly {:status 200
-                   :headers {"Content-Type" "text/html"}
-                   :body body})
-      wrap-refresh))
+(defn- create-test-handler
+  ([body] (create-test-handler body 200))
+  ([body status]
+   (-> (constantly {:status  status
+                    :headers {"Content-Type" "text/html"}
+                    :body    body})
+       wrap-refresh)))
 
 (defn- get-test-response-body [handler]
   (:body (handler {:request-method :get, :uri "/"})))
@@ -82,3 +84,13 @@
         (str
          "<html><head attr=\"val\">"
          "<title>t</title></head><body><header>head</header></body></html>"))))
+
+(deftest wrap-refresh-adds-script-for-any-status-code
+  (let [[result-body body]
+        [(str "<html><head>"
+              "<script type=\"text/javascript\">" refresh-script "</script>"
+              "</head><body>body</body></html>")
+         (str "<html><head>"
+              "</head><body>body</body></html>")]]
+    (doseq [status [200 300 400 500]]
+      (is (= result-body (get-test-response-body (create-test-handler body status)))))))
