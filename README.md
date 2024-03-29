@@ -1,4 +1,4 @@
-# Ring-Refresh
+# Ring-Refresh [![Build Status](https://github.com/weavejester/ring-refresh/actions/workflows/test.yml/badge.svg)](https://github.com/weavejester/ring-refresh/actions/workflows/test.yml)
 
 Ring-Refresh is a middleware library for Ring that automatically
 triggers a browser refresh when your source files change.
