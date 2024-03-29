@@ -36,6 +36,6 @@ But it can be customized to include other directories:
 
 ## License
 
-Copyright © 2022 James Reeves
+Copyright © 2024 James Reeves
 
 Distributed under the Eclipse Public License, the same as Clojure.
