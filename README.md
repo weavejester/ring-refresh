@@ -12,7 +12,7 @@ This library is designed for use only in development environments.
 
 Add the following development dependency to your `project.clj` file:
 
-    [ring-refresh "0.1.3"]
+    [ring-refresh "0.2.0"]
 
 ## Usage
 
