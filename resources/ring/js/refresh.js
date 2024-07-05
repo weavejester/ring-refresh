@@ -1,19 +1,28 @@
-var pageLoadTime = new Date().getTime()
+var pageLoadTime = new Date().getTime();
 
-function reloadIfSourceChanged() {
-    var request = new XMLHttpRequest()
-    request.onreadystatechange = function() {
-        if (request.readyState == 4) {
-            if (request.responseText == 'true') {
-                window.location.reload()
+
+async function reloadIfSourceChanged() {
+    try {
+        const response = await fetch('/__source_changed', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
             }
-            else {
-                setTimeout(reloadIfSourceChanged, 200)
-            }
+        });
+        const text = await response.text()
+        const sourceChanged = parseInt(text);
+
+        if (sourceChanged >= pageLoadTime) {
+            window.location.reload();
         }
+    } catch (error) {
+        console.error('Error:', error);
     }
-    request.open('GET', '/__source_changed?since=' + pageLoadTime, true)
-    request.send()
 }
 
-window.onload = reloadIfSourceChanged
+async function reloadIfSourceChangedJob() {
+    await reloadIfSourceChanged()
+    setTimeout(reloadIfSourceChangedJob, 200);
+}
+
+window.onload = reloadIfSourceChangedJob;
